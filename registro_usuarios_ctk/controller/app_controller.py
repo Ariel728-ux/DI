@@ -1,3 +1,4 @@
+import threading
 import tkinter.messagebox as messagebox
 from pathlib import Path
 from PIL import Image
@@ -21,6 +22,11 @@ class AppController:
         self.indices_visibles = []
         self.usuario_actual = None
 
+        # Control de auto-guardado
+        self.auto_guardar_activo = False
+        self._auto_guardar_stop = threading.Event()
+        self._auto_guardar_thread = None
+
         self.view.configurar_callback_anadir(self.abrir_ventana_anadir)
         self.view.configurar_callback_eliminar(self.eliminar_usuario)
         self.view.configurar_menu_archivo(
@@ -29,6 +35,8 @@ class AppController:
             on_salir=self.salir
         )
         self.view.configurar_callbacks_filtro(self.aplicar_filtros_y_actualizar)
+        self.view.configurar_callback_autoguardar(self.toggle_auto_guardado)
+        self.view.configurar_callback_salir(self.salir)
 
         self.modelo.cargar_csv(self.CSV_PATH)
         self.aplicar_filtros_y_actualizar()
@@ -107,7 +115,6 @@ class AppController:
         except ValueError:
             messagebox.showerror("Error", "La edad debe ser un número entero")
             return
-
         nuevo_usuario = Usuario(nombre, edad, genero, avatar)
         self.modelo.añadir(nuevo_usuario)
 
@@ -182,5 +189,44 @@ class AppController:
         self.view.actualizar_estado("Usuarios cargados correctamente")
         messagebox.showinfo("Cargar", "Usuarios cargados correctamente")
 
+    def toggle_auto_guardado(self):
+        if not self.auto_guardar_activo:
+            # Activar auto-guardado
+            self.auto_guardar_activo = True
+            self._auto_guardar_stop.clear()
+            self._auto_guardar_thread = threading.Thread(
+                target=self._auto_guardar_loop,
+                daemon=True
+            )
+            self._auto_guardar_thread.start()
+            self.view.set_estado_autoguardar(True)
+            self.view.actualizar_estado("Auto-guardado activado (cada 10 segundos)")
+        else:
+            # Desactivar auto-guardado
+            self.auto_guardar_activo = False
+            self._auto_guardar_stop.set()
+            self.view.set_estado_autoguardar(False)
+            self.view.actualizar_estado("Auto-guardado desactivado")
+
+    def _auto_guardar_loop(self):
+        while not self._auto_guardar_stop.wait(10.0):
+            try:
+                self.modelo.guardar_csv(self.CSV_PATH)
+                self.master.after(
+                    0,
+                    lambda: self.view.actualizar_estado("Auto-guardado realizado correctamente")
+                )
+            except Exception as e:
+                self.master.after(
+                    0,
+                    lambda: self.view.actualizar_estado(f"Error en auto-guardado: {e}")
+                )
+
     def salir(self):
+        if self.auto_guardar_activo:
+            self.auto_guardar_activo = False
+            self._auto_guardar_stop.set()
+            if self._auto_guardar_thread and self._auto_guardar_thread.is_alive():
+                self._auto_guardar_thread.join(timeout=1)
+
         self.master.destroy()

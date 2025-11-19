@@ -91,9 +91,23 @@ class MainView:
         self.label_genero = ctk.CTkLabel(self.frame_derecho, text="Género: -", font=ctk.CTkFont(size=14))
         self.label_genero.pack(pady=5, padx=20, anchor="w")
 
-        # Barra de estado
-        self.label_estado = ctk.CTkLabel(self.master, text="Usuarios visibles: 0/0", anchor="w")
-        self.label_estado.grid(row=2, column=0, sticky="ew", padx=10, pady=(5, 10))
+        # Frame barra de estado
+        self.frame_estado = ctk.CTkFrame(self.master)
+        self.frame_estado.grid(row=2, column=0, sticky="ew", padx=10, pady=(5, 10))
+
+        self.frame_estado.grid_columnconfigure(1, weight=1)
+
+        # Botón auto-guardado
+        self.boton_autoguardar = ctk.CTkButton(
+            self.frame_estado,
+            text="Auto-guardar (10s): OFF",
+            width=180
+        )
+        self.boton_autoguardar.grid(row=0, column=0, padx=(5, 10), pady=5, sticky="w")
+
+        # Label de estado
+        self.label_estado = ctk.CTkLabel(self.frame_estado, text="Usuarios visibles: 0/0", anchor="w")
+        self.label_estado.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
     def configurar_menu_archivo(self, on_guardar, on_cargar, on_salir):
         self.menu_archivo.add_command(label="Guardar", command=on_guardar)
@@ -110,6 +124,18 @@ class MainView:
     def configurar_callbacks_filtro(self, callback):
         self.var_busqueda.trace_add("write", lambda *args: callback())
         self.filtro_genero.configure(command=lambda _: callback())
+
+    def configurar_callback_autoguardar(self, callback):
+        self.boton_autoguardar.configure(command=callback)
+
+    def configurar_callback_salir(self, callback):
+        self.master.protocol("WM_DELETE_WINDOW", callback)
+
+    def set_estado_autoguardar(self, activo):
+        if activo:
+            self.boton_autoguardar.configure(text="Auto-guardar (10s): ON")
+        else:
+            self.boton_autoguardar.configure(text="Auto-guardar (10s): OFF")
 
     def get_texto_busqueda(self):
         return self.var_busqueda.get()
