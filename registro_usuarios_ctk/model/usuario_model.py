@@ -23,8 +23,14 @@ class GestorUsuarios:
     def listar(self):
         return self._usuarios
 
+    def obtener(self, indice):
+        return self._usuarios[indice]
+
     def añadir(self, usuario):
         self._usuarios.append(usuario)
+
+    def eliminar(self, indice):
+        del self._usuarios[indice]
 
     def guardar_csv(self, ruta):
         ruta = Path(ruta)
@@ -39,7 +45,7 @@ class GestorUsuarios:
         try:
             with open(ruta, "r", newline="", encoding="utf-8") as f:
                 reader = csv.reader(f)
-                next(reader, None)  # Saltar cabecera
+                next(reader, None)
 
                 self._usuarios.clear()
 
