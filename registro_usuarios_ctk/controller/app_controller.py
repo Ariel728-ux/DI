@@ -1,49 +1,84 @@
-"""
-Controlador principal que orquesta el Modelo y la Vista.
-"""
+import tkinter.messagebox as messagebox
+from pathlib import Path
+from PIL import Image
+import customtkinter as ctk
 
-from model.usuario_model import GestorUsuarios
-from view.main_view import MainView
+from model.usuario_model import GestorUsuarios, Usuario
+from view.main_view import MainView, AddUserView
 
 
 class AppController:
-    """Controlador principal que coordina Modelo y Vista."""
-
     def __init__(self, master):
         self.master = master
-
-        # Crear instancias del Modelo y la Vista
         self.modelo = GestorUsuarios()
         self.view = MainView(master)
 
-        # Índice del usuario seleccionado
-        self.usuario_seleccionado_idx = None
+        # Configurar rutas
+        self.BASE_DIR = Path(__file__).resolve().parent.parent
+        self.ASSETS_PATH = self.BASE_DIR / "assets"
 
-        # Conectar eventos
-        self._conectar_eventos()
+        # Caché de imágenes
+        self.avatar_images = {}
 
-        # Refrescar lista inicial
+        # Configurar callbacks
+        self.view.configurar_callback_anadir(self.abrir_ventana_anadir)
+
+        # Refrescar la lista al iniciar
         self.refrescar_lista_usuarios()
 
-    def _conectar_eventos(self):
-        """Conecta los widgets de la vista con los métodos del controlador."""
-        self.view.btn_salir.configure(command=self.salir)
-
     def refrescar_lista_usuarios(self):
-        """Actualiza la lista de usuarios en la vista."""
         usuarios = self.modelo.listar()
         self.view.actualizar_lista_usuarios(usuarios, self.seleccionar_usuario)
 
     def seleccionar_usuario(self, indice):
-        """Callback cuando se selecciona un usuario de la lista."""
-        self.usuario_seleccionado_idx = indice
-        usuario = self.modelo.obtener(indice)
+        usuarios = self.modelo.listar()
+        usuario = usuarios[indice]
+        avatar_image = self.cargar_avatar(usuario.avatar)
+        self.view.mostrar_detalles_usuario(usuario, avatar_image)
 
-        if usuario:
-            self.view.mostrar_detalles_usuario(usuario)
-        else:
-            self.view.mostrar_detalles_usuario(None)
+    def cargar_avatar(self, nombre_archivo):
+        if not nombre_archivo:
+            return None
 
-    def salir(self):
-        """Cierra la aplicación."""
-        self.master.quit()
+        # Si ya está en caché, devolverla
+        if nombre_archivo in self.avatar_images:
+            return self.avatar_images[nombre_archivo]
+
+        ruta = self.ASSETS_PATH / nombre_archivo
+        try:
+            imagen = Image.open(ruta)
+            ctk_image = ctk.CTkImage(light_image=imagen, dark_image=imagen, size=(120, 120))
+            self.avatar_images[nombre_archivo] = ctk_image
+            return ctk_image
+        except FileNotFoundError:
+            return None
+
+    def abrir_ventana_anadir(self):
+        add_view = AddUserView(self.master)
+        add_view.guardar_button.configure(command=lambda: self.anadir_usuario(add_view))
+
+    def anadir_usuario(self, add_view):
+        datos = add_view.get_data()
+        nombre = datos["nombre"]
+        edad_txt = datos["edad"]
+        genero = datos["genero"]
+        avatar = datos["avatar"]
+
+        # Validaciones
+        if not nombre or not edad_txt:
+            messagebox.showerror("Error", "Nombre y edad son obligatorios")
+            return
+
+        try:
+            edad = int(edad_txt)
+        except ValueError:
+            messagebox.showerror("Error", "La edad debe ser un número entero")
+            return
+
+        # Crear y añadir usuario
+        nuevo_usuario = Usuario(nombre, edad, genero, avatar)
+        self.modelo.añadir(nuevo_usuario)
+
+        # Cerrar ventana y refrescar
+        add_view.window.destroy()
+        self.refrescar_lista_usuarios()

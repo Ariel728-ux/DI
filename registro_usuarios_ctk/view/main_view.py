@@ -1,125 +1,69 @@
-
-"""
-Vista principal de la aplicación.
-Contiene todos los widgets y la estructura visual.
-"""
-
 import customtkinter as ctk
 
 
 class MainView:
-    """Vista principal que muestra la lista de usuarios y sus detalles."""
-
     def __init__(self, master):
         self.master = master
 
-        # Configurar el grid principal (2 columnas)
-        master.grid_columnconfigure(0, weight=1)
-        master.grid_columnconfigure(1, weight=2)
-        master.grid_rowconfigure(0, weight=1)
-        master.grid_rowconfigure(1, weight=0)
+        # Configurar grid principal
+        self.master.grid_rowconfigure(0, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+        self.master.grid_columnconfigure(1, weight=2)
 
-        # ===== PANEL IZQUIERDO: Lista de Usuarios =====
-        self.frame_izquierdo = ctk.CTkFrame(master)
-        self.frame_izquierdo.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+        # Frame izquierdo - Lista de usuarios
+        self.frame_izquierdo = ctk.CTkFrame(self.master)
+        self.frame_izquierdo.grid(row=0, column=0, sticky="nsew", padx=(10, 5), pady=10)
 
-        # Título
-        titulo_usuarios = ctk.CTkLabel(
+        self.label_titulo_lista = ctk.CTkLabel(
             self.frame_izquierdo,
-            text="Usuarios",
-            font=ctk.CTkFont(size=20, weight="bold")
+            text="Lista de Usuarios",
+            font=ctk.CTkFont(size=16, weight="bold")
         )
-        titulo_usuarios.pack(pady=10)
+        self.label_titulo_lista.pack(pady=10)
 
-        # Frame scrollable para la lista
-        self.lista_usuarios_scrollable = ctk.CTkScrollableFrame(
+        # Botón para añadir usuario
+        self.boton_anadir = ctk.CTkButton(
             self.frame_izquierdo,
-            width=200
+            text="Añadir Usuario"
         )
-        self.lista_usuarios_scrollable.pack(fill="both", expand=True, padx=10, pady=5)
+        self.boton_anadir.pack(pady=5, padx=10, fill="x")
 
-        # ===== PANEL DERECHO: Detalles del Usuario =====
-        self.frame_derecho = ctk.CTkFrame(master)
-        self.frame_derecho.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        self.lista_usuarios_scrollable = ctk.CTkScrollableFrame(self.frame_izquierdo)
+        self.lista_usuarios_scrollable.pack(expand=True, fill="both", padx=10, pady=10)
 
-        # Título
-        titulo_detalles = ctk.CTkLabel(
+        # Frame derecho - Detalles del usuario
+        self.frame_derecho = ctk.CTkFrame(self.master)
+        self.frame_derecho.grid(row=0, column=1, sticky="nsew", padx=(5, 10), pady=10)
+
+        self.label_titulo_detalles = ctk.CTkLabel(
             self.frame_derecho,
             text="Detalles del Usuario",
-            font=ctk.CTkFont(size=20, weight="bold")
+            font=ctk.CTkFont(size=16, weight="bold")
         )
-        titulo_detalles.pack(pady=10)
+        self.label_titulo_detalles.pack(pady=10)
 
-        # Labels para mostrar información
-        self.nombre_label = ctk.CTkLabel(
-            self.frame_derecho,
-            text="Nombre: -",
-            font=ctk.CTkFont(size=14)
-        )
-        self.nombre_label.pack(pady=5, anchor="w", padx=20)
+        # Label para el avatar
+        self.avatar_label = ctk.CTkLabel(self.frame_derecho, text="")
+        self.avatar_label.pack(pady=10)
 
-        self.edad_label = ctk.CTkLabel(
-            self.frame_derecho,
-            text="Edad: -",
-            font=ctk.CTkFont(size=14)
-        )
-        self.edad_label.pack(pady=5, anchor="w", padx=20)
+        self.label_nombre = ctk.CTkLabel(self.frame_derecho, text="Nombre: -")
+        self.label_nombre.pack(pady=5, padx=20, anchor="w")
 
-        self.genero_label = ctk.CTkLabel(
-            self.frame_derecho,
-            text="Género: -",
-            font=ctk.CTkFont(size=14)
-        )
-        self.genero_label.pack(pady=5, anchor="w", padx=20)
+        self.label_edad = ctk.CTkLabel(self.frame_derecho, text="Edad: -")
+        self.label_edad.pack(pady=5, padx=20, anchor="w")
 
-        self.avatar_label_texto = ctk.CTkLabel(
-            self.frame_derecho,
-            text="Avatar: -",
-            font=ctk.CTkFont(size=14)
-        )
-        self.avatar_label_texto.pack(pady=5, anchor="w", padx=20)
+        self.label_genero = ctk.CTkLabel(self.frame_derecho, text="Género: -")
+        self.label_genero.pack(pady=5, padx=20, anchor="w")
 
-        # Label para la imagen del avatar
-        self.avatar_label = ctk.CTkLabel(
-            self.frame_derecho,
-            text=""
-        )
-        self.avatar_label.pack(pady=20)
-
-        # ===== PANEL INFERIOR: Botones =====
-        self.frame_botones = ctk.CTkFrame(master)
-        self.frame_botones.grid(row=1, column=0, columnspan=2, padx=10, pady=10, sticky="ew")
-
-        self.btn_agregar = ctk.CTkButton(
-            self.frame_botones,
-            text="Añadir Usuario",
-            width=150
-        )
-        self.btn_agregar.pack(side="left", padx=10, pady=10)
-
-        self.btn_eliminar = ctk.CTkButton(
-            self.frame_botones,
-            text="Eliminar Usuario",
-            width=150,
-            fg_color="red",
-            hover_color="darkred"
-        )
-        self.btn_eliminar.pack(side="left", padx=10, pady=10)
-
-        self.btn_salir = ctk.CTkButton(
-            self.frame_botones,
-            text="Salir",
-            width=150
-        )
-        self.btn_salir.pack(side="right", padx=10, pady=10)
+    def configurar_callback_anadir(self, callback):
+        self.boton_anadir.configure(command=callback)
 
     def actualizar_lista_usuarios(self, usuarios, on_seleccionar_callback):
-        """Actualiza la lista de usuarios mostrada."""
-        # Limpiar lista actual
+        # Limpiar lista anterior
         for widget in self.lista_usuarios_scrollable.winfo_children():
             widget.destroy()
 
-        # Crear botón para cada usuario
+        # Crear botones para cada usuario
         for i, usuario in enumerate(usuarios):
             btn = ctk.CTkButton(
                 self.lista_usuarios_scrollable,
@@ -128,15 +72,86 @@ class MainView:
             )
             btn.pack(fill="x", padx=5, pady=2)
 
-    def mostrar_detalles_usuario(self, usuario):
-        """Muestra los detalles de un usuario en el panel derecho."""
-        if usuario:
-            self.nombre_label.configure(text=f"Nombre: {usuario.nombre}")
-            self.edad_label.configure(text=f"Edad: {usuario.edad}")
-            self.genero_label.configure(text=f"Género: {usuario.genero}")
-            self.avatar_label_texto.configure(text=f"Avatar: {usuario.avatar}")
+    def mostrar_detalles_usuario(self, usuario, avatar_image=None):
+        self.label_nombre.configure(text=f"Nombre: {usuario.nombre}")
+        self.label_edad.configure(text=f"Edad: {usuario.edad}")
+        self.label_genero.configure(text=f"Género: {usuario.genero}")
+
+        if avatar_image:
+            self.avatar_label.configure(image=avatar_image, text="")
         else:
-            self.nombre_label.configure(text="Nombre: -")
-            self.edad_label.configure(text="Edad: -")
-            self.genero_label.configure(text="Género: -")
-            self.avatar_label_texto.configure(text="Avatar: -")
+            self.avatar_label.configure(image="", text="Sin avatar")
+
+
+class AddUserView:
+    def __init__(self, master):
+        self.window = ctk.CTkToplevel(master)
+        self.window.title("Añadir Nuevo Usuario")
+        self.window.geometry("300x400")
+        self.window.grab_set()
+
+        # Nombre
+        ctk.CTkLabel(self.window, text="Nombre:").pack(pady=(20, 5), padx=20, anchor="w")
+        self.nombre_entry = ctk.CTkEntry(self.window)
+        self.nombre_entry.pack(pady=5, padx=20, fill="x")
+
+        # Edad
+        ctk.CTkLabel(self.window, text="Edad:").pack(pady=(10, 5), padx=20, anchor="w")
+        self.edad_entry = ctk.CTkEntry(self.window)
+        self.edad_entry.pack(pady=5, padx=20, fill="x")
+
+        # Género
+        ctk.CTkLabel(self.window, text="Género:").pack(pady=(10, 5), padx=20, anchor="w")
+        self.genero_var = ctk.StringVar(value="Masculino")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Masculino",
+            variable=self.genero_var,
+            value="Masculino"
+        ).pack(padx=30, anchor="w")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Femenino",
+            variable=self.genero_var,
+            value="Femenino"
+        ).pack(padx=30, anchor="w")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Otro",
+            variable=self.genero_var,
+            value="Otro"
+        ).pack(padx=30, anchor="w")
+
+        # Avatar
+        ctk.CTkLabel(self.window, text="Avatar:").pack(pady=(10, 5), padx=20, anchor="w")
+        self.avatar_var = ctk.StringVar(value="mujer 1.png")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Mujer 1",
+            variable=self.avatar_var,
+            value="mujer 1.png"
+        ).pack(padx=30, anchor="w")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Hombre",
+            variable=self.avatar_var,
+            value="hombre.png"
+        ).pack(padx=30, anchor="w")
+        ctk.CTkRadioButton(
+            self.window,
+            text="Mujer 2",
+            variable=self.avatar_var,
+            value="mujer 2.png"
+        ).pack(padx=30, anchor="w")
+
+        # Botones
+        self.guardar_button = ctk.CTkButton(self.window, text="Guardar")
+        self.guardar_button.pack(pady=20, padx=20, fill="x")
+
+    def get_data(self):
+        return {
+            "nombre": self.nombre_entry.get().strip(),
+            "edad": self.edad_entry.get().strip(),
+            "genero": self.genero_var.get(),
+            "avatar": self.avatar_var.get()
+        }
