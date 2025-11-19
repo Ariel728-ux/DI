@@ -16,14 +16,23 @@ class AppController:
         # Configurar rutas
         self.BASE_DIR = Path(__file__).resolve().parent.parent
         self.ASSETS_PATH = self.BASE_DIR / "assets"
+        self.CSV_PATH = self.BASE_DIR / "usuarios.csv"
 
         # Caché de imágenes
         self.avatar_images = {}
 
         # Configurar callbacks
         self.view.configurar_callback_anadir(self.abrir_ventana_anadir)
+        self.view.configurar_menu_archivo(
+            on_guardar=self.guardar_usuarios,
+            on_cargar=self.cargar_usuarios,
+            on_salir=self.salir
+        )
 
-        # Refrescar la lista al iniciar
+        # Intentar cargar CSV al inicio
+        self.cargar_usuarios()
+
+        # Refrescar la lista
         self.refrescar_lista_usuarios()
 
     def refrescar_lista_usuarios(self):
@@ -82,3 +91,18 @@ class AppController:
         # Cerrar ventana y refrescar
         add_view.window.destroy()
         self.refrescar_lista_usuarios()
+
+    def guardar_usuarios(self):
+        try:
+            self.modelo.guardar_csv(self.CSV_PATH)
+            messagebox.showinfo("Guardar", "Usuarios guardados correctamente")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudieron guardar los usuarios.\n{e}")
+
+    def cargar_usuarios(self):
+        self.modelo.cargar_csv(self.CSV_PATH)
+        self.refrescar_lista_usuarios()
+        messagebox.showinfo("Cargar", "Usuarios cargados correctamente")
+
+    def salir(self):
+        self.master.destroy()

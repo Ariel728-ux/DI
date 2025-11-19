@@ -1,9 +1,16 @@
 import customtkinter as ctk
+import tkinter
 
 
 class MainView:
     def __init__(self, master):
         self.master = master
+
+        # Crear menú
+        self.menubar = tkinter.Menu(master)
+        master.config(menu=self.menubar)
+        self.menu_archivo = tkinter.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Archivo", menu=self.menu_archivo)
 
         # Configurar grid principal
         self.master.grid_rowconfigure(0, weight=1)
@@ -54,6 +61,12 @@ class MainView:
 
         self.label_genero = ctk.CTkLabel(self.frame_derecho, text="Género: -")
         self.label_genero.pack(pady=5, padx=20, anchor="w")
+
+    def configurar_menu_archivo(self, on_guardar, on_cargar, on_salir):
+        self.menu_archivo.add_command(label="Guardar", command=on_guardar)
+        self.menu_archivo.add_command(label="Cargar", command=on_cargar)
+        self.menu_archivo.add_separator()
+        self.menu_archivo.add_command(label="Salir", command=on_salir)
 
     def configurar_callback_anadir(self, callback):
         self.boton_anadir.configure(command=callback)
