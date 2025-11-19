@@ -12,9 +12,9 @@ class GestorUsuarios:
         self._cargar_datos_de_ejemplo()
     
     def _cargar_datos_de_ejemplo(self):
-        self._usuarios.append(Usuario("Ana", 25, "Femenino", "mujer 1.png"))
-        self._usuarios.append(Usuario("Luis", 30, "Masculino", "hombre.png"))
-        self._usuarios.append(Usuario("María", 28, "Femenino", "mujer 2.png"))
+        self._usuarios.append(Usuario("Aang", 112, "Masculino", "aanf.png"))
+        self._usuarios.append(Usuario("Roku", 98, "Masculino", "roku.png"))
+        self._usuarios.append(Usuario("Kioshi", 257, "Femenino", "kioshi.png"))
     
     def listar(self):
         return self._usuarios
